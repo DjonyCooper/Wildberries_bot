@@ -8,7 +8,4 @@
 <h2 align="center">CONTACT US<br>(cвязаться с нами)</h2>
 <div id="badges" align="center">
 DjonyCooper:
-<a href="https://t.me/DjonyCooper"><img src="https://img.shields.io/badge/Telegram-blue?style=plastic&logo=telegram&logoColor=white" alt="Telegram Badge"/></a>
-&emsp; &emsp; &emsp; &emsp; &emsp; &emsp;
-Julys88: 
-<a href="https://t.me/Julys88"><img src="https://img.shields.io/badge/Telegram-blue?style=plastic&logo=telegram&logoColor=white" alt="Telegram Badge"/></a></div>
+<a href="https://t.me/DjonyCooper"><img src="https://img.shields.io/badge/Telegram-blue?style=plastic&logo=telegram&logoColor=white" alt="Telegram Badge"/></a></div>
