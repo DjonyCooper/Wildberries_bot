@@ -1,0 +1,208 @@
+# coding=gbk
+import asyncio
+import emoji
+import logging
+from aiogram import Bot, Dispatcher, types
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+import urllib3
+import locale
+import configparser
+
+import parser_pages
+
+from functions.crud.create import create_new_prod, create_new_user
+from functions.crud.delete import delete_prod
+from functions.crud.read import read_info
+
+from view.keyboards import start_keyboard, adm_panel_keyboard
+
+locale.setlocale(
+    category=locale.LC_ALL,
+    locale="Russian")
+
+urllib3.disable_warnings()
+logging.basicConfig(level=logging.INFO)
+config = configparser.ConfigParser()
+config.read("./settings.ini")
+
+bot = Bot(token=config["bot"]["token"])
+
+dp = Dispatcher(bot, storage=MemoryStorage())
+
+
+class SaveInfo(StatesGroup):
+    article_number = State()
+    size = State()
+
+
+class DelInfo(StatesGroup):
+    article_number = State()
+
+
+# §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§à§Þ§Ñ§ß§Õ§í "/start"
+@dp.message_handler(commands=["start"])
+async def start(message):
+    check_user = read_info(column='*',
+                           table='users',
+                           where_text=f'mess_id="{message.from_user.id}"')
+    user_group = check_user[0][3]
+    main_photo = open('image/start_logo.jpg', 'rb')
+
+    if not check_user:
+        create = create_new_user(telegram_id=message.from_user.id,
+                                 full_name=message.from_user.full_name)
+        if create['result']:
+            if user_group == 'user':
+                await bot.send_photo(message.from_user.id, main_photo)
+                await bot.send_message(message.chat.id, text=emoji.emojize(':handshake: §±§â§Ú§Ó§Ö§ä! §Á §ã§à§Ù§Õ§Ñ§ß, §é§ä§à§Ò§í §á§à§Þ§à§é§î §ä§Ö§Ò§Ö'
+                                                                           ' §ã §à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§ß§Ú§Ö§Þ §ã§Ü§Ú§Õ§à§Ü §ß§Ñ Wildberries.ru\n '
+                                                                           ':backhand_index_pointing_right: §¦§ã§Ý§Ú §Ó§í §Ù§Õ§Ö§ã§î '
+                                                                           '§Ó§á§Ö§â§Ó§í§Ö, :red_exclamation_mark: §â§Ö§Ü§à§Þ§Ö§ß§Õ§å§Ö§Þ '
+                                                                           '§à§Ù§ß§Ñ§Ü§à§Þ§Ú§ä§î§ã§ñ §ã §á§â§Ñ§Ó§Ú§Ý§Ñ§Þ§Ú §Ú§ã§á§à§Ý§î§Ù§à§Ó§Ñ§ß§Ú§ñ\n '
+                                                                           ':backhand_index_pointing_right: §±§â§Ú§ñ§ä§ß§í§ç §£§Ñ§Þ '
+                                                                           '§á§à§Ü§å§á§à§Ü §Ú §Þ§à§â§Ö $§Ü§Ú§Õ§à§Ü! :face_blowing_a_kiss:'),
+                                       reply_markup=start_keyboard.user_keyboard())
+            elif user_group == 'dev':
+                await bot.send_photo(message.from_user.id, main_photo)
+                await bot.send_message(message.chat.id,
+                                       text=emoji.emojize(':handshake: §±§â§Ú§Ó§Ö§ä §â§Ñ§Ù§â§Ñ§Ò§à§ä§é§Ú§Ü!'),
+                                       reply_markup=start_keyboard.dev_keyboard())
+        else:
+            await bot.send_message(message.chat.id,
+                                   text='§±§â§à§Ú§Ù§à§ê§Ý§Ñ §ß§Ö§à§á§â§Ö§Õ§Ö§Ý§Ö§ß§ß§Ñ§ñ §à§ê§Ú§Ò§Ü§Ñ, §á§à§á§â§à§Ò§å§Û§ä§Ö §á§à§Ù§Ø§Ö §Ú§Ý§Ú §ã§Ó§ñ§Ø§Ú§ä§Ö§ã§î §ã §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§à§Û')
+    elif user_group == 'dev':
+        await bot.send_photo(message.from_user.id, main_photo)
+        await bot.send_message(message.chat.id,
+                               text=emoji.emojize(':handshake: "§£§í §å§ã§á§Ö§ê§ß§à §Ú§ß§Ú§è§Ú§Ñ§Ý§Ú§Ù§Ú§â§à§Ó§Ñ§ß§í §Ò§à§ä§à§Þ!\n§¥§à§ã§ä§å§á §ã §á§à§Ó§í§ê§Ö§ß§ß§í§Þ§Ú §á§â§Ñ§Ó§Ñ§Þ§Ú!'),
+                               reply_markup=start_keyboard.dev_keyboard())
+    elif user_group == 'user':
+        await bot.send_photo(message.from_user.id, main_photo)
+        await bot.send_message(message.from_user.id,
+                               text="§£§í §å§ã§á§Ö§ê§ß§à §Ú§ß§Ú§è§Ú§Ñ§Ý§Ú§Ù§Ú§â§à§Ó§Ñ§ß§í §Ò§à§ä§à§Þ!\n§±§â§Ú§ñ§ä§ß§í§ç §£§Ñ§Þ §á§à§Ü§å§á§à§Ü §Ú §Þ§à§â§Ö $§Ü§Ú§Õ§à§Ü! ",
+                               reply_markup=start_keyboard.user_keyboard())
+    else:
+        await bot.send_message(message.from_user.id,
+                               text="§¥§à§ã§ä§å§á §Ó §Ò§à§ä§Ñ §Ù§Ñ§á§â§Ö§ë§Ö§ß. §±§à§Õ§â§à§Ò§ß§à§ã§ä§Ú §å§ä§à§é§ß§ñ§Û§ä§Ö §Ó §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§Ö")
+
+
+@dp.message_handler(content_types=['text'])
+async def get_text_messages(message):
+    check_user = read_info(column='*',
+                           table='users',
+                           where_text=f'mess_id="{message.from_user.id}"')
+    user_group = check_user[0][3]
+    if message.text == emoji.emojize(':plus:') + " §¥§à§Ò§Ñ§Ó§Ú§ä§î":
+        await bot.send_message(message.from_user.id,
+                               "§°§ä§á§â§Ñ§Ó§î§ä§Ö §Þ§ß§Ö §Ñ§â§ä§Ú§Ü§å§Ý §á§à§Ù§Ú§è§Ú§Ú, §è§Ö§ß§å §Ü§à§ä§à§â§à§Û §Ó§í §ç§à§ä§Ú§ä§Ö §à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§ä§î:")
+        await SaveInfo.article_number.set()
+
+    elif message.text == emoji.emojize(':heavy_dollar_sign:') + " §³§á§Ú§ã§à§Ü §Þ§à§Ú§ç §ç§à§ä§Ö§Ý§à§Ü " + emoji.emojize(
+            ':heavy_dollar_sign:'):
+        info = read_info(column='*',
+                         table='users_info',
+                         where_text=f'mess_id="{message.from_user.id}"')
+        if info:
+            message_text = '§¿§ä§à §ã§á§Ú§ã§à§Ü §á§à§Ù§Ú§è§Ú§Û, §Ù§Ñ §Ú§Ù§Þ§Ö§ß§Ö§ß§Ú§Ö§Þ §è§Ö§ß §Ü§à§ä§à§â§í§ç, §Þ§í §ã§Ý§Ö§Õ§Ú§Þ §Õ§Ý§ñ §£§Ñ§ã:\n\n'
+            for item in info:
+                message_text += emoji.emojize(
+                    f':backhand_index_pointing_right: §¡§â§ä§Ú§Ü§å§Ý: {str(item[1])} §¸§Ö§ß§Ñ: {str(item[4])} \n '
+                    f'{str(item[2])} \n')
+            await bot.send_message(message.from_user.id, message_text)
+        else:
+            await bot.send_message(message.from_user.id,
+                                   "§µ §£§Ñ§ã §á§à§Ü§Ñ §ß§Ö§ä §ß§Ö §à§Õ§ß§à§Û §á§à§Ù§Ú§è§Ú§Ú, §Õ§à§Ò§Ñ§Ó§î§ä§Ö §á§Ö§â§Ó§å§ð §á§à §Ü§Ý§Ú§Ü§å §ß§Ñ §Ü§ß§à§á§Ü§å '§¥§à§Ò§Ñ§Ó§Ú§ä§î'")
+    elif message.text == emoji.emojize(':minus:') + " §µ§Õ§Ñ§Ý§Ú§ä§î":
+        await bot.send_message(message.from_user.id, "§°§ä§á§â§Ñ§Ó§î§ä§Ö §Þ§ß§Ö §Ñ§â§ä§Ú§Ü§å§Ý §á§à§Ù§Ú§è§Ú§Ú, §Ü§à§ä§à§â§í§Û §Ó§í §ç§à§ä§Ú§ä§Ö §å§Õ§Ñ§Ý§Ú§ä§î:")
+        await DelInfo.article_number.set()
+    elif message.text == "§±§â§Ñ§Ó§Ú§Ý§Ñ §â§Ñ§Ò§à§ä§í §Ò§à§ä§Ñ":
+        rules_photo = open('image/rules_logo.jpg', 'rb')
+        rules_text = emoji.emojize(
+            "§°§ã§ß§à§Ó§ß§à§Ö §á§â§Ñ§Ó§Ú§Ý§à §ß§Ñ§ê§Ö§Ô§à §Ü§Ý§å§Ò§Ñ: §Ó§ã§Ö§Þ §Ú §Ó§Ö§Ù§Õ§Ö §ã§à§à§Ò§ë§Ñ§Û§ä§Ö §à §ß§Ñ§ê§Ö§Þ §Ü§Ý§å§Ò§Ö! :winking_face:\n"
+            "§£ §Ò§à§ä§Ö §á§â§Ö§Õ§ã§ä§Ñ§Ó§Ý§Ö§ß§à §ß§Ö§ã§Ü§à§Ý§î§Ü§à §æ§å§ß§Ü§è§Ú§à§ß§Ñ§Ý§î§ß§í§ç §Ü§ß§à§á§à§Ü:\n"
+            ":plus: <b>§¥§à§Ò§Ñ§Ó§Ú§ä§î</b> - <i>§Õ§Ñ§Ö§ä §Ó§à§Ù§Þ§à§Ø§ß§à§ã§ä§î §Õ§à§Ò§Ñ§Ó§Ú§ä§î §Ó §ã§Ú§ã§ä§Ö§Þ§å §Ñ§â§ä§Ú§Ü§å§Ý §Ú§ß§ä§Ö§â§Ö§ã§å§ð§ë§Ö§Û §Ó§Ñ§ã §á§à§Ù§Ú§è§Ú§Ú §Ú§Ù "
+            "Wildberries §Ù§Ñ §è§Ö§ß§à§Û §Ü§à§ä§à§â§à§Û, §Ó§Ñ§Þ §ç§à§ä§Ö§Ý§à§ã§î §Ò§í §ã§Ý§Ö§Õ§Ú§ä§î.</i>\n"
+            ":minus: <b>§µ§Õ§Ñ§Ý§Ú§ä§î</b> - <i>§Õ§Ñ§Ö§ä §Ó§à§Ù§Þ§à§Ø§ß§à§ã§ä§î §å§Õ§Ñ§Ý§Ú§ä§î §á§à§Ù§Ú§è§Ú§ð, §è§Ö§ß§Ñ §Ü§à§ä§à§â§à§Û §Ó§Ñ§ã §Ò§à§Ý§Ö§Ö §ß§Ö §Ú§ß§ä§Ö§â§Ö§ã§å§Ö§ä.</i>\n"
+            ":heavy_dollar_sign: <b>§³§á§Ú§ã§à§Ü §ç§à§ä§Ö§Ý§à§Ü</b> - <i>§á§à§Ü§Ñ§Ù§í§Ó§Ñ§Ö§ä §Ó§ã§Ö §á§à§Ù§Ú§è§Ú§Ú, §è§Ö§ß§å §Ü§à§ä§à§â§í§ç, §Ó§í §ã§Ö§Û§é§Ñ§ã "
+            "§à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§Ö§ä§Ö.</i>\n §±§â§Ú§ñ§ä§ß§à§Ô§à §Ú §á§â§à§Õ§å§Ü§ä§Ú§Ó§ß§à§Ô§à §á§à§Ý§î§Ù§à§Ó§Ñ§ß§Ú§ñ!\nC §å§Ó. §Ü§à§Þ§Ñ§ß§Õ§Ñ §â§Ñ§Ù§â§Ñ§Ò§à§ä§Ü§Ú :man_technologist:!")
+        await bot.send_photo(message.from_user.id, rules_photo, caption=rules_text, parse_mode='html')
+    elif message.text == emoji.emojize(':man_technologist: §±§Ñ§ß§Ö§Ý§î §å§á§â§Ñ§Ó§Ý§Ö§ß§Ú§ñ'):
+        if user_group == 'dev':
+            await bot.send_message(message.chat.id,
+                                   text=emoji.emojize(':play_button: §±§Ö§â§Ö§ç§à§Õ §Ó §â§Ñ§Ù§Õ§Ö§Ý: §±§Ñ§ß§Ö§Ý§î §å§á§â§Ñ§Ó§Ý§Ö§ß§Ú§ñ'),
+                                   reply_markup=adm_panel_keyboard.dev_keyboard())
+        else:
+            await bot.send_message(message.chat.id,
+                                   text=emoji.emojize('§¥§à§ã§ä§å§á §Ù§Ñ§á§â§Ö§ë§Ö§ß!'))
+    elif message.text == emoji.emojize(":BACK_arrow: §£§Ö§â§ß§å§ä§î§ã§ñ §Ó §Ô§Ý§Ñ§Ó§ß§à§Ö §Þ§Ö§ß§ð"):
+        if user_group == 'dev':
+            await bot.send_message(message.chat.id,
+                                   text=emoji.emojize(':play_button: §±§Ö§â§Ö§ç§à§Õ §Ó §â§Ñ§Ù§Õ§Ö§Ý: §¤§Ý§Ñ§Ó§ß§à§Ö §Þ§Ö§ß§ð\n§¥§à§ã§ä§å§á §ã §á§à§Ó§í§ê§Ö§ß§ß§í§Þ§Ú §á§â§Ñ§Ó§Ñ§Þ§Ú!'),
+                                   reply_markup=start_keyboard.dev_keyboard())
+        elif user_group == 'user':
+            await bot.send_message(message.from_user.id,
+                                   text=emoji.emojize(':play_button: §±§Ö§â§Ö§ç§à§Õ §Ó §â§Ñ§Ù§Õ§Ö§Ý: §¤§Ý§Ñ§Ó§ß§à§Ö §Þ§Ö§ß§ð'),
+                                   reply_markup=start_keyboard.user_keyboard())
+        else:
+            await bot.send_message(message.from_user.id,
+                                   text="§¥§à§ã§ä§å§á §Ó §Ò§à§ä§Ñ §Ù§Ñ§á§â§Ö§ë§Ö§ß. §±§à§Õ§â§à§Ò§ß§à§ã§ä§Ú §å§ä§à§é§ß§ñ§Û§ä§Ö §Ó §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§Ö")
+
+
+
+# §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§¥§à§Ò§Ñ§Ó§Ú§ä§î"
+@dp.message_handler(state=SaveInfo.article_number)
+async def func_add_article(message: types.Message, state: FSMContext):
+    async with state.proxy():
+        article_number = message.text
+        prod_info = parser_pages.search_prod(article_number)
+        msg_text = ''
+        if prod_info:
+            create = create_new_prod(telegram_id=message.from_user.id,
+                                     prod_info=prod_info)
+            if create['result']:
+                msg_text += emoji.emojize(f"§¡§â§ä.: {prod_info[0]}\t\t\t\t:money_bag: {prod_info[2]} §â§å§Ò.\n"
+                                          f"<b>{prod_info[1]}</b>\n\n"
+                                          f"§®§í §ß§Ñ§é§Ñ§Ý§Ú §à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§ä§î §è§Ö§ß§å §ï§ä§à§Ô§à §ä§à§Ó§Ñ§â§Ñ!\n")
+                if prod_info[3] != '':
+                    await bot.send_photo(message.from_user.id, photo=prod_info[3], caption=msg_text,
+                                         parse_mode='html')
+                else:
+                    await bot.send_message(message.from_user.id, msg_text, parse_mode='html')
+            else:
+                await bot.send_message(message.from_user.id,
+                                       '§µ§á§ã, §á§à§ç§à§Ø§Ö §ï§ä§à§ä §Ñ§â§ä§Ú§Ü§å§Ý §Þ§í §å§Ø§Ö §à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§Ö§Þ! §±§â§à§Ó§Ö§â§î§ä§Ö §ã§á§Ú§ã§à§Ü §ç§à§ä§Ö§Ý§à§Ü :)')
+        else:
+            msg_text += emoji.emojize(f":speaking_head: §®§í §ß§Ö §ã§Þ§à§Ô§Ý§Ú §ß§Ñ§Û§ä§Ú §ä§à§Ó§Ñ§â §ã §ï§ä§Ú§Þ §Ñ§â§ä§Ú§Ü§å§Ý§à§Þ")
+            await bot.send_message(message.from_user.id, msg_text, parse_mode='html')
+    await state.finish()
+
+
+# §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§µ§Õ§Ñ§Ý§Ú§ä§î"
+@dp.message_handler(state=DelInfo.article_number)
+async def func_add_article(message: types.Message, state: FSMContext):
+    async with state.proxy():
+        article_number = message.text
+        try:
+            value_article = int(article_number)
+            delete = delete_prod(table='users_info',
+                                 where_text=f'article_number="{value_article}"')
+            if delete['result']:
+                await bot.send_message(message.from_user.id, f"§¡§â§ä§Ú§Ü§å§Ý {value_article} - §å§ã§á§Ö§ê§ß§à §å§Õ§Ñ§Ý§Ö§ß!")
+            else:
+                await bot.send_message(message.from_user.id,
+                                       f"§£§Ó§Ö§Õ§Ö§ß§ß§í§Û §£§Ñ§Þ§Ú §Ñ§â§ä§Ú§Ü§å§Ý {value_article} - §ß§Ö §ß§Ñ§Û§Õ§Ö§ß. §±§â§à§Ó§Ö§â§î§ä§Ö §Õ§Ñ§ß§ß§í§Ö §Ú "
+                                       f"§á§à§á§â§à§Ò§å§Û§ä§Ö §ã§ß§à§Ó§Ñ.")
+        except ValueError:
+            await bot.send_message(message.from_user.id,
+                                   f"§©§Ñ§Õ§Ñ§ß§ß§í§Û §£§Ñ§Þ§Ú §Ñ§â§ä§Ú§Ü§å§Ý {article_number} - §ß§Ö §Ü§à§â§â§Ö§Ü§ä§Ö§ß! §±§â§à§Ó§Ö§â§î§ä§Ö §Õ§Ñ§ß§ß§í§Ö §Ú"
+                                   f" §á§à§á§â§à§Ò§å§Û§ä§Ö §ã§ß§à§Ó§Ñ.")
+    await state.finish()
+
+
+async def main():
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
