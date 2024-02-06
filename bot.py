@@ -15,6 +15,7 @@ import parser_pages
 from functions.crud.create import create_new_prod, create_new_user
 from functions.crud.delete import delete_prod
 from functions.crud.read import read_info
+from functions.generation_table_all_users import gen_table
 
 from view.keyboards import start_keyboard, adm_panel_keyboard
 
@@ -93,13 +94,12 @@ async def get_text_messages(message):
                            table='users',
                            where_text=f'mess_id="{message.from_user.id}"')
     user_group = check_user[0][3]
-    if message.text == emoji.emojize(':plus:') + " §¥§à§Ò§Ñ§Ó§Ú§ä§î":
+    if message.text == emoji.emojize(':plus: §¥§à§Ò§Ñ§Ó§Ú§ä§î'):
         await bot.send_message(message.from_user.id,
                                "§°§ä§á§â§Ñ§Ó§î§ä§Ö §Þ§ß§Ö §Ñ§â§ä§Ú§Ü§å§Ý §á§à§Ù§Ú§è§Ú§Ú, §è§Ö§ß§å §Ü§à§ä§à§â§à§Û §Ó§í §ç§à§ä§Ú§ä§Ö §à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§ä§î:")
         await SaveInfo.article_number.set()
 
-    elif message.text == emoji.emojize(':heavy_dollar_sign:') + " §³§á§Ú§ã§à§Ü §Þ§à§Ú§ç §ç§à§ä§Ö§Ý§à§Ü " + emoji.emojize(
-            ':heavy_dollar_sign:'):
+    elif message.text == emoji.emojize(':heavy_dollar_sign: §³§á§Ú§ã§à§Ü §Þ§à§Ú§ç §ç§à§ä§Ö§Ý§à§Ü :heavy_dollar_sign:'):
         info = read_info(column='*',
                          table='users_info',
                          where_text=f'mess_id="{message.from_user.id}"')
@@ -113,9 +113,11 @@ async def get_text_messages(message):
         else:
             await bot.send_message(message.from_user.id,
                                    "§µ §£§Ñ§ã §á§à§Ü§Ñ §ß§Ö§ä §ß§Ö §à§Õ§ß§à§Û §á§à§Ù§Ú§è§Ú§Ú, §Õ§à§Ò§Ñ§Ó§î§ä§Ö §á§Ö§â§Ó§å§ð §á§à §Ü§Ý§Ú§Ü§å §ß§Ñ §Ü§ß§à§á§Ü§å '§¥§à§Ò§Ñ§Ó§Ú§ä§î'")
-    elif message.text == emoji.emojize(':minus:') + " §µ§Õ§Ñ§Ý§Ú§ä§î":
+
+    elif message.text == emoji.emojize(':minus: §µ§Õ§Ñ§Ý§Ú§ä§î'):
         await bot.send_message(message.from_user.id, "§°§ä§á§â§Ñ§Ó§î§ä§Ö §Þ§ß§Ö §Ñ§â§ä§Ú§Ü§å§Ý §á§à§Ù§Ú§è§Ú§Ú, §Ü§à§ä§à§â§í§Û §Ó§í §ç§à§ä§Ú§ä§Ö §å§Õ§Ñ§Ý§Ú§ä§î:")
         await DelInfo.article_number.set()
+
     elif message.text == "§±§â§Ñ§Ó§Ú§Ý§Ñ §â§Ñ§Ò§à§ä§í §Ò§à§ä§Ñ":
         rules_photo = open('image/rules_logo.jpg', 'rb')
         rules_text = emoji.emojize(
@@ -127,6 +129,7 @@ async def get_text_messages(message):
             ":heavy_dollar_sign: <b>§³§á§Ú§ã§à§Ü §ç§à§ä§Ö§Ý§à§Ü</b> - <i>§á§à§Ü§Ñ§Ù§í§Ó§Ñ§Ö§ä §Ó§ã§Ö §á§à§Ù§Ú§è§Ú§Ú, §è§Ö§ß§å §Ü§à§ä§à§â§í§ç, §Ó§í §ã§Ö§Û§é§Ñ§ã "
             "§à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§Ö§ä§Ö.</i>\n §±§â§Ú§ñ§ä§ß§à§Ô§à §Ú §á§â§à§Õ§å§Ü§ä§Ú§Ó§ß§à§Ô§à §á§à§Ý§î§Ù§à§Ó§Ñ§ß§Ú§ñ!\nC §å§Ó. §Ü§à§Þ§Ñ§ß§Õ§Ñ §â§Ñ§Ù§â§Ñ§Ò§à§ä§Ü§Ú :man_technologist:!")
         await bot.send_photo(message.from_user.id, rules_photo, caption=rules_text, parse_mode='html')
+
     elif message.text == emoji.emojize(':man_technologist: §±§Ñ§ß§Ö§Ý§î §å§á§â§Ñ§Ó§Ý§Ö§ß§Ú§ñ'):
         if user_group == 'dev':
             await bot.send_message(message.chat.id,
@@ -135,6 +138,18 @@ async def get_text_messages(message):
         else:
             await bot.send_message(message.chat.id,
                                    text=emoji.emojize('§¥§à§ã§ä§å§á §Ù§Ñ§á§â§Ö§ë§Ö§ß!'))
+
+    elif message.text == "§³§á§Ú§ã§à§Ü §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§Ö§Û":
+        if user_group == 'dev':
+            all_user_info = read_info(column='*',
+                                      table='users')
+            table_all_users = gen_table(all_user_list=all_user_info)
+            await bot.send_message(message.chat.id,
+                                   text=table_all_users)
+        else:
+            await bot.send_message(message.chat.id,
+                                   text=emoji.emojize('§¥§à§ã§ä§å§á §Ù§Ñ§á§â§Ö§ë§Ö§ß!'))
+
     elif message.text == emoji.emojize(":BACK_arrow: §£§Ö§â§ß§å§ä§î§ã§ñ §Ó §Ô§Ý§Ñ§Ó§ß§à§Ö §Þ§Ö§ß§ð"):
         if user_group == 'dev':
             await bot.send_message(message.chat.id,
@@ -147,8 +162,6 @@ async def get_text_messages(message):
         else:
             await bot.send_message(message.from_user.id,
                                    text="§¥§à§ã§ä§å§á §Ó §Ò§à§ä§Ñ §Ù§Ñ§á§â§Ö§ë§Ö§ß. §±§à§Õ§â§à§Ò§ß§à§ã§ä§Ú §å§ä§à§é§ß§ñ§Û§ä§Ö §Ó §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§Ö")
-
-
 
 # §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§¥§à§Ò§Ñ§Ó§Ú§ä§î"
 @dp.message_handler(state=SaveInfo.article_number)
@@ -177,7 +190,6 @@ async def func_add_article(message: types.Message, state: FSMContext):
             await bot.send_message(message.from_user.id, msg_text, parse_mode='html')
     await state.finish()
 
-
 # §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§µ§Õ§Ñ§Ý§Ú§ä§î"
 @dp.message_handler(state=DelInfo.article_number)
 async def func_add_article(message: types.Message, state: FSMContext):
@@ -199,10 +211,8 @@ async def func_add_article(message: types.Message, state: FSMContext):
                                    f" §á§à§á§â§à§Ò§å§Û§ä§Ö §ã§ß§à§Ó§Ñ.")
     await state.finish()
 
-
 async def main():
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
