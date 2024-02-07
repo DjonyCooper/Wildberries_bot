@@ -5,7 +5,7 @@
 <p align="center">
 <img src="https://github.com/JuliaRyzhova/Wb_parser_TG_bot_client/blob/master/README_files/live_demo.gif" width="100%"></p>
 
-<h2 align="center">CONTACT US<br>(cвязаться с нами)</h2>
+<h2 align="center">CONTACT ME<br>(cвязаться со мной)</h2>
 <div id="badges" align="center">
 DjonyCooper:
 <a href="https://t.me/DjonyCooper"><img src="https://img.shields.io/badge/Telegram-blue?style=plastic&logo=telegram&logoColor=white" alt="Telegram Badge"/></a></div>
