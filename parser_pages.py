@@ -19,8 +19,8 @@ def search_prod(article):
         else:
             prod_info.append(str(res['data']['products'][0]['salePriceU'])[:-2])
         base_len_article = 6
-        if len(article) >= base_len_article:
-            add_len = len(article) - base_len_article
+        if len(str(article)) >= base_len_article:
+            add_len = len(str(article)) - base_len_article
             value_vol = str(article)[0:1+int(add_len)]
             value_part = str(article)[0:3+int(add_len)]
             for b_num in range(1, 1000):

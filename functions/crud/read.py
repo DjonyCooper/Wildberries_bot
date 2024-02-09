@@ -7,7 +7,7 @@ def read_info(column: str, table: str, where_text: str = None):
        • table [str] - название таблицы
        • where [Optional | str] - условие(-я), для сортировки по таблице
     """
-    con = sqlite3.connect("data/config.db")
+    con = sqlite3.connect("./data/config.db") # при ошибке - заменить с абсолютный путь
     cur = con.cursor()
     if where_text is None:
         cur.execute(f'SELECT {column} FROM {table}')

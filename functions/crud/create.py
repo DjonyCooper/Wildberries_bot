@@ -1,6 +1,11 @@
 import sqlite3
 
 def create_new_user(telegram_id: int, full_name: str):
+    """Функция для добавления нового пользователя в базу данных, возвращает dict где в ['result']: True - успешно создан,
+    False - не создан\n
+           • telegram_id [int] - пользовательский идентификатор в телеграм
+           • full_name [str] - полное имя пользователя сохраненное в телеграм
+    """
     try:
         con = sqlite3.connect("data/config.db")
         cur = con.cursor()
@@ -15,9 +20,9 @@ def create_new_user(telegram_id: int, full_name: str):
 
 
 def create_new_prod(telegram_id: int, prod_info: dict):
-    """Функция для добавления нового продукта в базу данных, возвращает dict где в ['result']: True - удалено успешно,
-    False - не удалено / не чего удалять\n
-           • telegram_id [int] - пользовательский идентификатор в телеграмм
+    """Функция для добавления нового продукта в базу данных, возвращает dict где в ['result']: True - удалено добавлен,
+    False - не добавлен\n
+           • telegram_id [int] - пользовательский идентификатор в телеграм
            • prod_info [dict] - словарь с данными для записи в БД
     """
     con = sqlite3.connect('data/config.db')
