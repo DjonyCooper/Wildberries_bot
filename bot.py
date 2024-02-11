@@ -36,6 +36,8 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 class SaveInfo(StatesGroup):
     article_number = State()
     size = State()
+    send_message_step_one = State()
+    send_message_step_two = State()
 
 
 class DelInfo(StatesGroup):
@@ -48,44 +50,40 @@ async def start(message):
     check_user = read_info(column='*',
                            table='users',
                            where_text=f'mess_id="{message.from_user.id}"')
-    user_group = check_user[0][3]
     main_photo = open('image/start_logo.jpg', 'rb')
-
     if not check_user:
         create = create_new_user(telegram_id=message.from_user.id,
                                  full_name=message.from_user.full_name)
         if create['result']:
-            if user_group == 'user':
-                await bot.send_photo(message.from_user.id, main_photo)
-                await bot.send_message(message.chat.id, text=emoji.emojize(':handshake: §±§â§Ú§Ó§Ö§ä! §Á §ã§à§Ù§Õ§Ñ§ß, §é§ä§à§Ò§í §á§à§Þ§à§é§î §ä§Ö§Ò§Ö'
-                                                                           ' §ã §à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§ß§Ú§Ö§Þ §ã§Ü§Ú§Õ§à§Ü §ß§Ñ Wildberries.ru\n '
-                                                                           ':backhand_index_pointing_right: §¦§ã§Ý§Ú §Ó§í §Ù§Õ§Ö§ã§î '
-                                                                           '§Ó§á§Ö§â§Ó§í§Ö, :red_exclamation_mark: §â§Ö§Ü§à§Þ§Ö§ß§Õ§å§Ö§Þ '
-                                                                           '§à§Ù§ß§Ñ§Ü§à§Þ§Ú§ä§î§ã§ñ §ã §á§â§Ñ§Ó§Ú§Ý§Ñ§Þ§Ú §Ú§ã§á§à§Ý§î§Ù§à§Ó§Ñ§ß§Ú§ñ\n '
-                                                                           ':backhand_index_pointing_right: §±§â§Ú§ñ§ä§ß§í§ç §£§Ñ§Þ '
-                                                                           '§á§à§Ü§å§á§à§Ü §Ú §Þ§à§â§Ö $§Ü§Ú§Õ§à§Ü! :face_blowing_a_kiss:'),
-                                       reply_markup=start_keyboard.user_keyboard())
-            elif user_group == 'dev':
-                await bot.send_photo(message.from_user.id, main_photo)
-                await bot.send_message(message.chat.id,
-                                       text=emoji.emojize(':handshake: §±§â§Ú§Ó§Ö§ä §â§Ñ§Ù§â§Ñ§Ò§à§ä§é§Ú§Ü!'),
-                                       reply_markup=start_keyboard.dev_keyboard())
+            await bot.send_photo(message.from_user.id, main_photo)
+            await bot.send_message(message.chat.id,
+                                   text=emoji.emojize(':handshake: §±§â§Ú§Ó§Ö§ä! §Á §ã§à§Ù§Õ§Ñ§ß, §é§ä§à§Ò§í §á§à§Þ§à§é§î §ä§Ö§Ò§Ö'
+                                                      ' §ã §à§ä§ã§Ý§Ö§Ø§Ú§Ó§Ñ§ß§Ú§Ö§Þ §ã§Ü§Ú§Õ§à§Ü §ß§Ñ Wildberries.ru\n '
+                                                      ':backhand_index_pointing_right: §¦§ã§Ý§Ú §Ó§í §Ù§Õ§Ö§ã§î '
+                                                      '§Ó§á§Ö§â§Ó§í§Ö, :red_exclamation_mark: §â§Ö§Ü§à§Þ§Ö§ß§Õ§å§Ö§Þ '
+                                                      '§à§Ù§ß§Ñ§Ü§à§Þ§Ú§ä§î§ã§ñ §ã §á§â§Ñ§Ó§Ú§Ý§Ñ§Þ§Ú §Ú§ã§á§à§Ý§î§Ù§à§Ó§Ñ§ß§Ú§ñ\n '
+                                                      ':backhand_index_pointing_right: §±§â§Ú§ñ§ä§ß§í§ç §£§Ñ§Þ '
+                                                      '§á§à§Ü§å§á§à§Ü §Ú §Þ§à§â§Ö $§Ü§Ú§Õ§à§Ü! :face_blowing_a_kiss:'),
+                                   reply_markup=start_keyboard.user_keyboard())
         else:
             await bot.send_message(message.chat.id,
                                    text='§±§â§à§Ú§Ù§à§ê§Ý§Ñ §ß§Ö§à§á§â§Ö§Õ§Ö§Ý§Ö§ß§ß§Ñ§ñ §à§ê§Ú§Ò§Ü§Ñ, §á§à§á§â§à§Ò§å§Û§ä§Ö §á§à§Ù§Ø§Ö §Ú§Ý§Ú §ã§Ó§ñ§Ø§Ú§ä§Ö§ã§î §ã §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§à§Û')
-    elif user_group == 'dev':
-        await bot.send_photo(message.from_user.id, main_photo)
-        await bot.send_message(message.chat.id,
-                               text=emoji.emojize(':handshake: "§£§í §å§ã§á§Ö§ê§ß§à §Ú§ß§Ú§è§Ú§Ñ§Ý§Ú§Ù§Ú§â§à§Ó§Ñ§ß§í §Ò§à§ä§à§Þ!\n§¥§à§ã§ä§å§á §ã §á§à§Ó§í§ê§Ö§ß§ß§í§Þ§Ú §á§â§Ñ§Ó§Ñ§Þ§Ú!'),
-                               reply_markup=start_keyboard.dev_keyboard())
-    elif user_group == 'user':
-        await bot.send_photo(message.from_user.id, main_photo)
-        await bot.send_message(message.from_user.id,
-                               text="§£§í §å§ã§á§Ö§ê§ß§à §Ú§ß§Ú§è§Ú§Ñ§Ý§Ú§Ù§Ú§â§à§Ó§Ñ§ß§í §Ò§à§ä§à§Þ!\n§±§â§Ú§ñ§ä§ß§í§ç §£§Ñ§Þ §á§à§Ü§å§á§à§Ü §Ú §Þ§à§â§Ö $§Ü§Ú§Õ§à§Ü! ",
-                               reply_markup=start_keyboard.user_keyboard())
     else:
-        await bot.send_message(message.from_user.id,
-                               text="§¥§à§ã§ä§å§á §Ó §Ò§à§ä§Ñ §Ù§Ñ§á§â§Ö§ë§Ö§ß. §±§à§Õ§â§à§Ò§ß§à§ã§ä§Ú §å§ä§à§é§ß§ñ§Û§ä§Ö §Ó §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§Ö")
+        user_group = check_user[0][3]
+        if user_group == 'dev':
+            await bot.send_photo(message.from_user.id, main_photo)
+            await bot.send_message(message.chat.id,
+                                   text=emoji.emojize(
+                                       ':handshake: "§£§í §å§ã§á§Ö§ê§ß§à §Ú§ß§Ú§è§Ú§Ñ§Ý§Ú§Ù§Ú§â§à§Ó§Ñ§ß§í §Ò§à§ä§à§Þ!\n§¥§à§ã§ä§å§á §ã §á§à§Ó§í§ê§Ö§ß§ß§í§Þ§Ú §á§â§Ñ§Ó§Ñ§Þ§Ú!'),
+                                   reply_markup=start_keyboard.dev_keyboard())
+        elif user_group == 'user':
+            await bot.send_photo(message.from_user.id, main_photo)
+            await bot.send_message(message.from_user.id,
+                                   text="§£§í §å§ã§á§Ö§ê§ß§à §Ú§ß§Ú§è§Ú§Ñ§Ý§Ú§Ù§Ú§â§à§Ó§Ñ§ß§í §Ò§à§ä§à§Þ!\n§±§â§Ú§ñ§ä§ß§í§ç §£§Ñ§Þ §á§à§Ü§å§á§à§Ü §Ú §Þ§à§â§Ö $§Ü§Ú§Õ§à§Ü! ",
+                                   reply_markup=start_keyboard.user_keyboard())
+        else:
+            await bot.send_message(message.from_user.id,
+                                   text="§¥§à§ã§ä§å§á §Ó §Ò§à§ä§Ñ §Ù§Ñ§á§â§Ö§ë§Ö§ß. §±§à§Õ§â§à§Ò§ß§à§ã§ä§Ú §å§ä§à§é§ß§ñ§Û§ä§Ö §Ó §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§Ö")
 
 
 @dp.message_handler(content_types=['text'])
@@ -150,10 +148,31 @@ async def get_text_messages(message):
             await bot.send_message(message.chat.id,
                                    text=emoji.emojize('§¥§à§ã§ä§å§á §Ù§Ñ§á§â§Ö§ë§Ö§ß!'))
 
+    elif message.text == "§°§ä§á§â§Ñ§Ó§Ú§ä§î §ã§à§à§Ò§ë§Ö§ß§Ú§Ö":
+        if user_group == 'dev':
+            info_user = read_info(column='*',
+                                  table='users',
+                                  where_text='NOT user_group="dev"')
+            markup = types.InlineKeyboardMarkup(row_width=1)
+            for item in info_user:
+                telegram_id = item[1]
+                name = item[2]
+                markup.insert(
+                    types.InlineKeyboardButton(text=name, callback_data=telegram_id))
+            markup.add(types.InlineKeyboardButton(f"§°§ä§Þ§Ö§ß§Ñ", callback_data='no'))
+            await bot.send_message(message.chat.id,
+                                   text='§£§í§Ò§Ö§â§Ú§ä§Ö, §Ü§à§Þ§å §ç§à§ä§Ú§ä§Ö §à§ä§á§â§Ñ§Ó§Ú§ä§î §ã§à§à§Ò§ë§Ö§ß§Ú§Ö?',
+                                   reply_markup=markup)
+            await SaveInfo.send_message_step_one.set()
+        else:
+            await bot.send_message(message.chat.id,
+                                   text='§¥§à§ã§ä§å§á §Ù§Ñ§á§â§Ö§ë§Ö§ß!')
+
     elif message.text == emoji.emojize(":BACK_arrow: §£§Ö§â§ß§å§ä§î§ã§ñ §Ó §Ô§Ý§Ñ§Ó§ß§à§Ö §Þ§Ö§ß§ð"):
         if user_group == 'dev':
             await bot.send_message(message.chat.id,
-                                   text=emoji.emojize(':play_button: §±§Ö§â§Ö§ç§à§Õ §Ó §â§Ñ§Ù§Õ§Ö§Ý: §¤§Ý§Ñ§Ó§ß§à§Ö §Þ§Ö§ß§ð\n§¥§à§ã§ä§å§á §ã §á§à§Ó§í§ê§Ö§ß§ß§í§Þ§Ú §á§â§Ñ§Ó§Ñ§Þ§Ú!'),
+                                   text=emoji.emojize(
+                                       ':play_button: §±§Ö§â§Ö§ç§à§Õ §Ó §â§Ñ§Ù§Õ§Ö§Ý: §¤§Ý§Ñ§Ó§ß§à§Ö §Þ§Ö§ß§ð\n§¥§à§ã§ä§å§á §ã §á§à§Ó§í§ê§Ö§ß§ß§í§Þ§Ú §á§â§Ñ§Ó§Ñ§Þ§Ú!'),
                                    reply_markup=start_keyboard.dev_keyboard())
         elif user_group == 'user':
             await bot.send_message(message.from_user.id,
@@ -162,6 +181,7 @@ async def get_text_messages(message):
         else:
             await bot.send_message(message.from_user.id,
                                    text="§¥§à§ã§ä§å§á §Ó §Ò§à§ä§Ñ §Ù§Ñ§á§â§Ö§ë§Ö§ß. §±§à§Õ§â§à§Ò§ß§à§ã§ä§Ú §å§ä§à§é§ß§ñ§Û§ä§Ö §Ó §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§Ö")
+
 
 # §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§¥§à§Ò§Ñ§Ó§Ú§ä§î"
 @dp.message_handler(state=SaveInfo.article_number)
@@ -190,6 +210,7 @@ async def func_add_article(message: types.Message, state: FSMContext):
             await bot.send_message(message.from_user.id, msg_text, parse_mode='html')
     await state.finish()
 
+
 # §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§µ§Õ§Ñ§Ý§Ú§ä§î"
 @dp.message_handler(state=DelInfo.article_number)
 async def func_add_article(message: types.Message, state: FSMContext):
@@ -211,8 +232,80 @@ async def func_add_article(message: types.Message, state: FSMContext):
                                    f" §á§à§á§â§à§Ò§å§Û§ä§Ö §ã§ß§à§Ó§Ñ.")
     await state.finish()
 
+
+# §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§°§ä§á§â§Ñ§Ó§Ú§ä§î §ã§à§à§Ò§ë§Ö§ß§Ú§Ö" (§Ý§à§Ó§Ú§Þ callback §ã §Ü§ß§à§á§Ü§Ú §Ó§í§Ò§à§â§Ñ §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§ñ)
+@dp.callback_query_handler(state=SaveInfo.send_message_step_one)
+async def send_message_step_one_callback(callback_query: types.CallbackQuery, state: FSMContext):
+    async with state.proxy() as user_info:
+        try:
+            await callback_query.message.delete()
+        except:
+            pass
+        finally:
+            if callback_query.data == 'no':
+                await bot.send_message(callback_query.from_user.id,
+                                       emoji.emojize(':speaking_head: §á§â§à§è§Ö§ã§ã §á§â§Ö§â§Ó§Ñ§ß §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§Ö§Þ.'))
+                await state.finish()
+            else:
+                user_info['id'] = callback_query.data
+                markup = types.InlineKeyboardMarkup()
+                markup.add(types.InlineKeyboardButton(text='§°§ä§Þ§Ö§ß§Ñ', callback_data="no"))
+                await bot.send_message(callback_query.from_user.id,
+                                       text=f"§¯§Ñ§á§Ú§ê§Ú§ä§Ö §ã§à§à§Ò§ë§Ö§ß§Ú§Ö, §Ü§à§ä§à§â§à§Ö §ç§à§ä§Ú§ä§Ö §à§ä§á§â§Ñ§Ó§Ú§ä§î §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§ð §ã ID: {user_info['id']} §Ú§Ý§Ú §ß§Ñ§Ø§Þ§Ú§ä§Ö §°§ä§Þ§Ö§ß§Ñ",
+                                       reply_markup=markup)
+                await state.finish()
+                await SaveInfo.send_message_step_two.set()
+
+
+# §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§°§ä§á§â§Ñ§Ó§Ú§ä§î §ã§à§à§Ò§ë§Ö§ß§Ú§Ö" (§Ý§à§Ó§Ú§Þ message - §á§â§Ö§â§í§Ó§Ñ§Ö§Þ §á§â§à§è§Ö§ã§ã)
+@dp.message_handler(state=SaveInfo.send_message_step_one)
+async def send_message_step_one_msg(message: types.Message, state: FSMContext):
+    async with state.proxy():
+        try:
+            await bot.delete_message(message.chat.id, message_id=message.message_id - 1)
+        except:
+            pass
+        finally:
+            await bot.send_message(message.chat.id,
+                                   emoji.emojize(':speaking_head: §á§â§à§è§Ö§ã§ã §á§â§Ö§â§Ó§Ñ§ß, §ä.§Ü. §á§à§Ý§å§é§Ö§ß§í §ß§Ö§Ü§à§â§â§Ö§Ü§ä§ß§í§Ö §Õ§Ñ§ß§ß§í§Ö.'))
+            await state.finish()
+
+
+# §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§°§ä§á§â§Ñ§Ó§Ú§ä§î §ã§à§à§Ò§ë§Ö§ß§Ú§Ö" (§Ý§à§Ó§Ú§Þ message §Õ§Ý§ñ §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§ñ - §à§ä§á§â§Ñ§Ó§Ý§ñ§Ö§Þ §ã§à§à§Ò§ë§Ö§ß§Ú§Ö §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§ð)
+@dp.message_handler(state=SaveInfo.send_message_step_two)
+async def send_message_step_two_msg(message: types.Message, state: FSMContext):
+    async with state.proxy() as user_info :
+        try:
+            await bot.delete_message(message.chat.id, message_id=message.message_id - 1)
+        except:
+            pass
+        finally:
+            telegram_id = user_info['id']
+            msg = f'§³§à§à§Ò§ë§Ö§ß§Ú§Ö §à§ä §ä§Ö§ç. §á§à§Õ§Õ§Ö§â§Ø§Ü§Ú §Ò§à§ä§Ñ:\n{message.text}'
+            if telegram_id != '' and msg != '':
+                await bot.send_message(telegram_id, text=msg)
+                await bot.send_message(message.chat.id,
+                                       emoji.emojize(f':speaking_head: §£§Ñ§ê§Ö §ã§à§à§Ò§ë§Ö§ß§Ú§Ö §å§ã§á§Ö§ê§ß§à §à§ä§á§â§Ñ§Ó§Ý§Ö§ß§à §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§ð c ID: {telegram_id}.'))
+            else:
+                await bot.send_message(message.chat.id,
+                                       emoji.emojize(f':speaking_head: §°§ä§á§â§Ñ§Ó§Ü§Ñ §ã§à§à§Ò§ë§Ö§ß§Ú§ñ §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§ð c ID: {telegram_id} §ß§Ö §Ó§í§á§à§Ý§ß§Ö§ß§Ñ, §ä.§Ü. §ß§Ö §Ò§í§Ý§Ú §á§à§Ý§å§é§Ö§ß§í §Ó§ã§Ö §ß§Ö§à§Ò§ç§à§Õ§Ú§Þ§í§Ö §Õ§Ý§ñ §ï§ä§à§Ô§à §Õ§Ñ§ß§ß§í§Ö'))
+            await state.finish()
+
+
+# §°§Ò§â§Ñ§Ò§à§ä§Ü§Ñ §Õ§Ö§Û§ã§ä§Ó§Ú§Û §Ü§ß§à§á§Ü§Ú "§°§ä§á§â§Ñ§Ó§Ú§ä§î §ã§à§à§Ò§ë§Ö§ß§Ú§Ö" (§Ý§à§Ó§Ú§Þ callback §Ü§ß§à§á§Ü§Ú §°§ä§Þ§Ö§ß§Ñ)
+@dp.callback_query_handler(state=SaveInfo.send_message_step_two)
+async def send_message_step_two_callback(callback_query: types.CallbackQuery, state: FSMContext):
+    async with state.proxy():
+        await callback_query.message.delete()
+        if callback_query.data == 'no':
+            await bot.send_message(callback_query.from_user.id,
+                                   emoji.emojize(':speaking_head: §á§â§à§è§Ö§ã§ã §á§â§Ö§â§Ó§Ñ§ß §á§à§Ý§î§Ù§à§Ó§Ñ§ä§Ö§Ý§Ö§Þ.'))
+            await state.finish()
+
+
 async def main():
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

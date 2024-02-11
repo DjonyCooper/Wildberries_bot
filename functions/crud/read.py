@@ -16,3 +16,4 @@ def read_info(column: str, table: str, where_text: str = None):
     info = cur.fetchall()
     return info
 
+
